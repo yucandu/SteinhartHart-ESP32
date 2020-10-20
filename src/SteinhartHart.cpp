@@ -1,3 +1,5 @@
+#include "SteinhartHart.h"
+
 /*
  * Constructor
  */
@@ -50,18 +52,18 @@ void SteinhartHart::calcCoefficients()
 /*
  * Converts resistance to temperature (Kelvin).
  */
-float SteinhartHart::resistanceToTemperature(float R)
+float SteinhartHart::resistanceToTemperature(float resistance)
 {
-  return 1.0 / (_coeffA + _coeffB * log(R) + _coeffC * (pow(log(R), 3)));
+  return 1.0 / (_coeffA + _coeffB * log(resistance) + _coeffC * (pow(log(resistance), 3)));
 } //End resistanceToTemperature
 
 
 /*
  * Converts temperature (Kelvin) to resistance.
  */
-float SteinhartHart::temperatureToResistance(float T)
+float SteinhartHart::temperatureToResistance(float temperature)
 {
-  float x = 1.0 / (2.0 * _coeffC) * (_coeffA - 1.0 / T);
+  float x = 1.0 / (2.0 * _coeffC) * (_coeffA - 1.0 / temperature);
   float y = sqrt(pow(_coeffB / (3.0 * _coeffC), 3) + pow(x, 2));
   return exp(pow(y - x, 1.0 / 3.0) - pow(y + x, 1.0 / 3.0));
 } //End temperatureToResistance

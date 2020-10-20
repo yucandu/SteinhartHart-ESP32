@@ -12,8 +12,8 @@ class SteinhartHart
     SteinhartHart(float resistance1, float resistance2, float resistance3, float temperature1, float temperature2, float temperature3);
     ~SteinhartHart();
     void calcCoefficients();
-    float resistanceToTemperature(float R);
-    float temperatureToResistance(float T);
+    float resistanceToTemperature(float resistance);
+    float temperatureToResistance(float temperature);
     float getCoeffA();
     float getCoeffB();
     float getCoeffC();
