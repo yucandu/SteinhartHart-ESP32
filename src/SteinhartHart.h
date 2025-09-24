@@ -9,31 +9,44 @@ class SteinhartHart
 {
   public:
   	SteinhartHart();
-    SteinhartHart(float resistance1, float resistance2, float resistance3, float temperature1, float temperature2, float temperature3);
+    SteinhartHart(long resistance1, long resistance2, long resistance3, double temperature1, double temperature2, double temperature3);
     ~SteinhartHart();
     void calcCoefficients();
-    float resistanceToTemperature(float resistance);
-    float temperatureToResistance(float temperature);
-    float getCoeffA();
-    float getCoeffB();
-    float getCoeffC();
-    void setCoeffA(float coeffA);
-    void setCoeffB(float coeffB);
-    void setCoeffC(float coeffC);
-    float getResistance1();
-    float getResistance2();
-    float getResistance3();
-    void setResistance1(float resistance1);
-    void setResistance2(float resistance2);
-    void setResistance3(float resistance3);
-    float getTemperature1();
-    float getTemperature2();
-    float getTemperature3();
-    void setTemperature1(float temperature1);
-    void setTemperature2(float temperature2);
-    void setTemperature3(float temperature3);
+    double resistanceToTemperature(long resistance);
+    double temperatureToResistance(double temperature);
+    
+    // Helper functions for temperature conversion
+    double celsiusToKelvin(double celsius);
+    double kelvinToCelsius(double kelvin);
+    
+    // Coefficient getters and setters
+    double getCoeffA();
+    double getCoeffB();
+    double getCoeffC();
+    void setCoeffA(double coeffA);
+    void setCoeffB(double coeffB);
+    void setCoeffC(double coeffC);
+    
+    // Resistance getters and setters
+    long getResistance1();
+    long getResistance2();
+    long getResistance3();
+    void setResistance1(long resistance1);
+    void setResistance2(long resistance2);
+    void setResistance3(long resistance3);
+    
+    // Temperature getters and setters
+    double getTemperature1();
+    double getTemperature2();
+    double getTemperature3();
+    void setTemperature1(double temperature1);
+    void setTemperature2(double temperature2);
+    void setTemperature3(double temperature3);
+    
   private:
-    float _coeffA, _coeffB, _coeffC, _resistance1, _resistance2, _resistance3, _temperature1, _temperature2, _temperature3;
+    long _resistance1, _resistance2, _resistance3;
+	double _temperature1, _temperature2, _temperature3;
+	double _coeffA, _coeffB, _coeffC;
 };  //End class SteinhartHart
 
 #endif
