@@ -10,7 +10,7 @@ SteinhartHart::SteinhartHart()
 /*
  * Constructor
  */
-SteinhartHart::SteinhartHart(float resistance1, float resistance2, float resistance3, float temperature1, float temperature2, float temperature3)
+SteinhartHart::SteinhartHart(double resistance1, double resistance2, double resistance3, double temperature1, double temperature2, double temperature3)
 {
   _resistance1 = resistance1;
   _resistance2 = resistance2;
@@ -32,47 +32,105 @@ SteinhartHart::~SteinhartHart()
 
 /*
  * Calculates the Steinhart-Hart coefficients "a, b, and c".
+ * Assumes input temperatures are in Kelvin.
+ * For Celsius input, add 273.15 to convert to Kelvin.
  */
 void SteinhartHart::calcCoefficients()
 {
-  float L1 = log(_resistance1);
-  float L2 = log(_resistance2);
-  float L3 = log(_resistance3);
-  float Y1 = 1.0 / _temperature1;
-  float Y2 = 1.0 / _temperature2;
-  float Y3 = 1.0 / _temperature3;
-  float y2 = (Y2 - Y1) / (L2 - L1);
-  float y3 = (Y3 - Y1) / (L3 - L1);
-  _coeffC = ((y3 - y2) / (L3 - L2)) * (pow((L1 + L2 + L3), -1));
-  _coeffB = y2 - _coeffC * (pow(L1, 2) + L1 * L2 + pow(L2, 2));
-  _coeffA = Y1 - (_coeffB + pow(L1, 2) * _coeffC) * L1;
+  // Calculate natural logarithms of resistances
+  double L1 = log(_resistance1);
+  double L2 = log(_resistance2);
+  double L3 = log(_resistance3);
+  
+  // Calculate reciprocals of temperatures (assuming Kelvin)
+  double Y1 = 1.0 / _temperature1;
+  double Y2 = 1.0 / _temperature2;
+  double Y3 = 1.0 / _temperature3;
+  
+  // Calculate intermediate values
+  double gamma2 = (Y2 - Y1) / (L2 - L1);
+  double gamma3 = (Y3 - Y1) / (L3 - L1);
+  
+  // Calculate coefficients using correct Steinhart-Hart solution
+  _coeffC = (gamma3 - gamma2) / (L3 - L2);
+  _coeffB = gamma2 - _coeffC * (L1 * L1 + L1 * L2 + L2 * L2);
+  _coeffA = Y1 - (_coeffB + _coeffC * L1 * L1) * L1;
 }
 
 
 /*
  * Converts resistance to temperature (Kelvin).
  */
-float SteinhartHart::resistanceToTemperature(float resistance)
+double SteinhartHart::resistanceToTemperature(double resistance)
 {
-  return 1.0 / (_coeffA + _coeffB * log(resistance) + _coeffC * (pow(log(resistance), 3)));
+  double logR = log(resistance);
+  return 1.0 / (_coeffA + _coeffB * logR + _coeffC * logR * logR * logR);
 }
 
 
 /*
  * Converts temperature (Kelvin) to resistance.
+ * Uses iterative Newton-Raphson method for better accuracy.
  */
-float SteinhartHart::temperatureToResistance(float temperature)
+double SteinhartHart::temperatureToResistance(double temperature)
 {
-  float x = 1.0 / (2.0 * _coeffC) * (_coeffA - 1.0 / temperature);
-  float y = sqrt(pow(_coeffB / (3.0 * _coeffC), 3) + pow(x, 2));
-  return exp(pow(y - x, 1.0 / 3.0) - pow(y + x, 1.0 / 3.0));
+  // Initial guess - use middle calibration point as starting point
+  double resistance = _resistance2;
+  double targetInvT = 1.0 / temperature;
+  
+  // Newton-Raphson iteration
+  for (int i = 0; i < 10; i++) {
+    double logR = log(resistance);
+    double logR3 = logR * logR * logR;
+    
+    // Calculate f(R) = A + B*ln(R) + C*ln(R)^3 - 1/T
+    double f = _coeffA + _coeffB * logR + _coeffC * logR3 - targetInvT;
+    
+    // Calculate f'(R) = (B + 3*C*ln(R)^2) / R
+    double df_dR = (_coeffB + 3.0 * _coeffC * logR * logR) / resistance;
+    
+    // Newton-Raphson update: R_new = R_old - f(R)/f'(R)
+    double newResistance = resistance - f / df_dR;
+    
+    // Check for convergence
+    if (abs(newResistance - resistance) < 0.001) {
+      return newResistance;
+    }
+    
+    resistance = newResistance;
+    
+    // Ensure resistance stays positive
+    if (resistance <= 0) {
+      resistance = 1.0;
+    }
+  }
+  
+  return resistance;
+}
+
+
+/*
+ * Helper function to convert Celsius to Kelvin
+ */
+double SteinhartHart::celsiusToKelvin(double celsius)
+{
+  return celsius + 273.15;
+}
+
+
+/*
+ * Helper function to convert Kelvin to Celsius
+ */
+double SteinhartHart::kelvinToCelsius(double kelvin)
+{
+  return kelvin - 273.15;
 }
 
 
 /*
  *
  */
-float SteinhartHart::getCoeffA()
+double SteinhartHart::getCoeffA()
 {
   return _coeffA;
 }
@@ -81,7 +139,7 @@ float SteinhartHart::getCoeffA()
 /*
  *
  */
-float SteinhartHart::getCoeffB()
+double SteinhartHart::getCoeffB()
 {
   return _coeffB;
 }
@@ -90,7 +148,7 @@ float SteinhartHart::getCoeffB()
 /*
  *
  */
-float SteinhartHart::getCoeffC()
+double SteinhartHart::getCoeffC()
 {
   return _coeffC;
 }
@@ -99,7 +157,7 @@ float SteinhartHart::getCoeffC()
 /*
  *
  */
-void SteinhartHart::setCoeffA(float coeffA)
+void SteinhartHart::setCoeffA(double coeffA)
 {
   _coeffA = coeffA;
 }
@@ -108,7 +166,7 @@ void SteinhartHart::setCoeffA(float coeffA)
 /*
  *
  */
-void SteinhartHart::setCoeffB(float coeffB)
+void SteinhartHart::setCoeffB(double coeffB)
 {
   _coeffB = coeffB;
 }
@@ -117,7 +175,7 @@ void SteinhartHart::setCoeffB(float coeffB)
 /*
  *
  */
-void SteinhartHart::setCoeffC(float coeffC)
+void SteinhartHart::setCoeffC(double coeffC)
 {
   _coeffC = coeffC;
 }
@@ -126,7 +184,7 @@ void SteinhartHart::setCoeffC(float coeffC)
 /*
  *
  */
-float SteinhartHart::getResistance1()
+double SteinhartHart::getResistance1()
 {
   return _resistance1;
 }
@@ -135,7 +193,7 @@ float SteinhartHart::getResistance1()
 /*
  *
  */
-float SteinhartHart::getResistance2()
+double SteinhartHart::getResistance2()
 {
   return _resistance2;
 }
@@ -144,7 +202,7 @@ float SteinhartHart::getResistance2()
 /*
  *
  */
-float SteinhartHart::getResistance3()
+double SteinhartHart::getResistance3()
 {
   return _resistance3;
 }
@@ -153,34 +211,37 @@ float SteinhartHart::getResistance3()
 /*
  *
  */
-void SteinhartHart::setResistance1(float resistance1)
+void SteinhartHart::setResistance1(double resistance1)
 {
   _resistance1 = resistance1;
+  calcCoefficients();
 }
 
 
 /*
  *
  */
-void SteinhartHart::setResistance2(float resistance2)
+void SteinhartHart::setResistance2(double resistance2)
 {
   _resistance2 = resistance2;
+  calcCoefficients();
 }
 
 
 /*
  *
  */
-void SteinhartHart::setResistance3(float resistance3)
+void SteinhartHart::setResistance3(double resistance3)
 {
   _resistance3 = resistance3;
+  calcCoefficients();
 }
 
 
 /*
  *
  */
-float SteinhartHart::getTemperature1()
+double SteinhartHart::getTemperature1()
 {
   return _temperature1;
 }
@@ -189,7 +250,7 @@ float SteinhartHart::getTemperature1()
 /*
  *
  */
-float SteinhartHart::getTemperature2()
+double SteinhartHart::getTemperature2()
 {
   return _temperature2;
 }
@@ -198,7 +259,7 @@ float SteinhartHart::getTemperature2()
 /*
  *
  */
-float SteinhartHart::getTemperature3()
+double SteinhartHart::getTemperature3()
 {
   return _temperature3;
 }
@@ -207,25 +268,28 @@ float SteinhartHart::getTemperature3()
 /*
  *
  */
-void SteinhartHart::setTemperature1(float temperature1)
+void SteinhartHart::setTemperature1(double temperature1)
 {
   _temperature1 = temperature1;
+  calcCoefficients();
 }
 
 
 /*
  *
  */
-void SteinhartHart::setTemperature2(float temperature2)
+void SteinhartHart::setTemperature2(double temperature2)
 {
   _temperature2 = temperature2;
+  calcCoefficients();
 }
 
 
 /*
  *
  */
-void SteinhartHart::setTemperature3(float temperature3)
+void SteinhartHart::setTemperature3(double temperature3)
 {
   _temperature3 = temperature3;
+  calcCoefficients();
 }
