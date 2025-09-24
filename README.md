@@ -1,3 +1,5 @@
+_Improvements to this library were made with the help of Claude AI.  It said the equation was wrong, and the temperature return function was wrong.  I am trusting it._
+
 # Steinhart-Hart Arduino Library
  
 An implementation of the Steinhart-Hart equation as well as the inverse of the Steinhart-Hart equation.
