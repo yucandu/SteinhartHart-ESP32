@@ -10,7 +10,7 @@ SteinhartHart::SteinhartHart()
 /*
  * Constructor
  */
-SteinhartHart::SteinhartHart(double resistance1, double resistance2, double resistance3, double temperature1, double temperature2, double temperature3)
+SteinhartHart::SteinhartHart(long resistance1, long resistance2, long resistance3, double temperature1, double temperature2, double temperature3)
 {
   _resistance1 = resistance1;
   _resistance2 = resistance2;
@@ -61,7 +61,7 @@ void SteinhartHart::calcCoefficients()
 /*
  * Converts resistance to temperature (Kelvin).
  */
-double SteinhartHart::resistanceToTemperature(double resistance)
+double SteinhartHart::resistanceToTemperature(long resistance)
 {
   double logR = log(resistance);
   return 1.0 / (_coeffA + _coeffB * logR + _coeffC * logR * logR * logR);
@@ -184,7 +184,7 @@ void SteinhartHart::setCoeffC(double coeffC)
 /*
  *
  */
-double SteinhartHart::getResistance1()
+long SteinhartHart::getResistance1()
 {
   return _resistance1;
 }
@@ -193,7 +193,7 @@ double SteinhartHart::getResistance1()
 /*
  *
  */
-double SteinhartHart::getResistance2()
+long SteinhartHart::getResistance2()
 {
   return _resistance2;
 }
@@ -202,7 +202,7 @@ double SteinhartHart::getResistance2()
 /*
  *
  */
-double SteinhartHart::getResistance3()
+long SteinhartHart::getResistance3()
 {
   return _resistance3;
 }
@@ -211,7 +211,7 @@ double SteinhartHart::getResistance3()
 /*
  *
  */
-void SteinhartHart::setResistance1(double resistance1)
+void SteinhartHart::setResistance1(long resistance1)
 {
   _resistance1 = resistance1;
   calcCoefficients();
@@ -221,7 +221,7 @@ void SteinhartHart::setResistance1(double resistance1)
 /*
  *
  */
-void SteinhartHart::setResistance2(double resistance2)
+void SteinhartHart::setResistance2(long resistance2)
 {
   _resistance2 = resistance2;
   calcCoefficients();
@@ -231,7 +231,7 @@ void SteinhartHart::setResistance2(double resistance2)
 /*
  *
  */
-void SteinhartHart::setResistance3(double resistance3)
+void SteinhartHart::setResistance3(long resistance3)
 {
   _resistance3 = resistance3;
   calcCoefficients();
