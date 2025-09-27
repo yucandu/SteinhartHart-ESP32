@@ -37,35 +37,44 @@ SteinhartHart::~SteinhartHart()
  */
 void SteinhartHart::calcCoefficients()
 {
-  // Calculate natural logarithms of resistances
-  double L1 = log(_resistance1);
-  double L2 = log(_resistance2);
-  double L3 = log(_resistance3);
-  
-  // Calculate reciprocals of temperatures (assuming Kelvin)
-  double Y1 = 1.0 / _temperature1;
-  double Y2 = 1.0 / _temperature2;
-  double Y3 = 1.0 / _temperature3;
-  
-  // Calculate intermediate values
-  double gamma2 = (Y2 - Y1) / (L2 - L1);
-  double gamma3 = (Y3 - Y1) / (L3 - L1);
-  
-  // Calculate coefficients using correct Steinhart-Hart solution
-  _coeffC = (gamma3 - gamma2) / (L3 - L2);
-  _coeffB = gamma2 - _coeffC * (L1 * L1 + L1 * L2 + L2 * L2);
-  _coeffA = Y1 - (_coeffB + _coeffC * L1 * L1) * L1;
+  // Convert to Kelvin
+  double T1K = _temperature1;
+  double T2K = _temperature2;
+  double T3K = _temperature3;
+
+  // Natural log of resistances
+  double A1 = log(_resistance1);
+  double A2 = log(_resistance2);
+  double A3 = log(_resistance3);
+
+  // Spreadsheet-style intermediate values
+  double Z = A1 - A2;
+  double Y = A1 - A3;
+  double X = (1.0 / T1K) - (1.0 / T2K);
+  double W = (1.0 / T1K) - (1.0 / T3K);
+  double V = pow(A1, 3) - pow(A2, 3);
+  double U = pow(A1, 3) - pow(A3, 3);
+
+  double C3a = (X - Z * W / Y) / (V - Z * U / Y);
+  double C2a = (X - C3a * V) / Z;
+  double C1a = (1.0 / T1K) - C3a * pow(A1, 3) - C2a * A1;
+
+  // Apply scaling
+  _coeffC = C3a * 10000000.0;
+  _coeffB = C2a * 10000.0;
+  _coeffA = C1a * 1000.0;
 }
 
-
 /*
- * Converts resistance to temperature (Kelvin).
+ * Resistance to temperature (Kelvin)
  */
 double SteinhartHart::resistanceToTemperature(long resistance)
 {
   double logR = log(resistance);
-  return 1.0 / (_coeffA + _coeffB * logR + _coeffC * logR * logR * logR);
+  double invT = (_coeffA / 1000.0) + (_coeffB / 10000.0) * logR + (_coeffC / 10000000.0) * pow(logR, 3);
+  return 1.0 / invT;
 }
+
 
 
 /*
